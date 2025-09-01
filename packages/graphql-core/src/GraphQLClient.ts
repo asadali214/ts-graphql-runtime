@@ -11,7 +11,7 @@ export class GraphQLClient {
   constructor(config: GraphQLClientConfig) {
     this.config = {
       baseUrl: config.baseUrl,
-      timeout: config.timeout ?? 30000,
+      timeout: config.timeout ?? 25000,
       headers: config.headers ?? {},
     };
   }
