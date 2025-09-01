@@ -1,0 +1,20 @@
+{
+  "name": "ts-graphql",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "clean": "lerna run clean",
+    "build": "lerna run build",
+    "lint": "lerna run lint",
+    "check-style": "lerna run check-style",
+    "check-style:fix": "lerna run check-style:fix",
+    "build:dev": "tsc -b ./tsconfig.monorepo.json",
+    "test:watch": "jest",
+    "test": "lerna run test -- --ci --coverage --maxWorkers=2 --passWithNoTests"
+  },
+  "devDependencies": {
+    "lerna": "^6.0.0",
+    "typescript": "^5.0.0",
+    "rimraf": "^5.0.0"
+  }
+}
