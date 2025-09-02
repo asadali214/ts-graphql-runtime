@@ -1,2 +1,4 @@
-export { GraphQLClient } from './GraphQLClient';
-export { GraphQLClientConfig } from './GraphQLClientConfig';
+export { GraphQLClient } from './graphQLClients';
+export { GraphQLClientConfig } from './graphQLClientConfigs';
+export { GraphQLResponse } from './graphQLResponse';
+export { AbortError } from './abortError';

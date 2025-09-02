@@ -1,4 +1,6 @@
-import { GraphQLClientConfig } from './GraphQLClientConfig';
+import { AbortError, GraphQLClientConfig, GraphQLResponse } from '.';
+import { HttpClient } from '@apimatic/axios-client-adapter';
+import { HttpRequest } from '@apimatic/core-interfaces';
 
 enum QueryType {
   Query = 'query',
@@ -6,14 +8,16 @@ enum QueryType {
 }
 
 export class GraphQLClient {
-  private config: GraphQLClientConfig;
+  private baseUrl: string;
+  private headers: Record<string, string>;
+  private httpClient: HttpClient;
 
   constructor(config: GraphQLClientConfig) {
-    this.config = {
-      baseUrl: config.baseUrl,
-      timeout: config.timeout ?? 25000,
-      headers: config.headers ?? {},
-    };
+    this.baseUrl = config.baseUrl;
+    this.headers = config.headers ?? {};
+    this.httpClient = new HttpClient(AbortError, {
+      timeout: config.timeout,
+    });
   }
 
   async executeQuery<T>(
@@ -21,7 +25,7 @@ export class GraphQLClient {
     queryObj: Record<string, any>,
     variables?: Record<string, any>,
     types?: Record<string, string>
-  ): Promise<T> {
+  ): Promise<GraphQLResponse<T>> {
     const query = this.buildQuery(
       QueryType.Query,
       types ?? {},
@@ -29,7 +33,7 @@ export class GraphQLClient {
       variables ? Object.keys(variables) : [],
       this.buildFields(queryObj)
     );
-    return this.execute<T>(query, variables);
+    return this.execute(query, variables);
   }
 
   async executeMutation<T>(
@@ -37,7 +41,7 @@ export class GraphQLClient {
     queryObj: Record<string, any>,
     variables?: Record<string, any>,
     types?: Record<string, string>
-  ): Promise<T> {
+  ): Promise<GraphQLResponse<T>> {
     const query = this.buildQuery(
       QueryType.Mutation,
       types ?? {},
@@ -45,33 +49,26 @@ export class GraphQLClient {
       variables ? Object.keys(variables) : [],
       this.buildFields(queryObj)
     );
-    return this.execute<T>(query, variables);
+    return this.execute(query, variables);
   }
 
-  private async execute<T>(query: string, variables?: Record<string, any>): Promise<T> {
-    const body = JSON.stringify({ query, variables });
-    console.log('GraphQL Request Body:', body); // Debug log
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
-    try {
-      const res = await fetch(this.config.baseUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...this.config.headers },
-        body,
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      const json = await res.json();
-      if (json.errors) {
-        throw new Error(JSON.stringify(json.errors));
+  private async execute<T>(query: string, variables?: Record<string, any>): Promise<GraphQLResponse<T>> {
+    const request: HttpRequest = {
+      method: 'POST',
+      url: this.baseUrl,
+      headers: { ...this.headers, 'Content-Type': 'application/json' },
+      body: {
+        type: 'text',
+        content: JSON.stringify({ query, variables })
       }
-      return json.data[Object.keys(json.data)[0]];
-    } catch (err) {
-      if ((err as any).name === 'AbortError') {
-        throw new Error('Request timed out');
-      }
-      throw err;
+    };
+    const response = await this.httpClient.executeRequest(request);
+
+    if (typeof response.body === 'string') {
+      return JSON.parse(response.body);
     }
+
+    return typeof response.body === 'string' ? JSON.parse(response.body) : { errors: [] };
   }
 
   private buildQuery(

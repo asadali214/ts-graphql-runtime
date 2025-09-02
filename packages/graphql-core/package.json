@@ -9,6 +9,9 @@
     "test": "jest",
     "build": "npm run clean && tsc"
   },
+  "dependencies": {
+    "@apimatic/axios-client-adapter": "^0.3.15"
+  },
   "files": [
     "dist"
   ],
