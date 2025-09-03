@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@apimatic/axios-client-adapter@^0.3.15":
-  version "0.3.15"
-  resolved "https://registry.yarnpkg.com/@apimatic/axios-client-adapter/-/axios-client-adapter-0.3.15.tgz#7d00d7e5728bc703c09586104291484919448197"
-  integrity sha512-rliG4FDUVjqmcdN1wxREIi8eqkiyxH7ISelEPsT0n6xJOZCVO1N1hLApokRT3lE9pnpuVB6Ums7wlF5gbbnXzg==
+"@apimatic/axios-client-adapter@^0.3.16":
+  version "0.3.16"
+  resolved "https://registry.yarnpkg.com/@apimatic/axios-client-adapter/-/axios-client-adapter-0.3.16.tgz#cdbe42ef3c82e7fcad310fb276587027172e5ba0"
+  integrity sha512-YdWU5SNNix+eqFNcULujrkOj84E2GCgS3820IaEVz96v61fsp2u2g3TB7ppRB3zHSW/sUU6omCUUaQRbHBM7QQ==
   dependencies:
     "@apimatic/convert-to-stream" "^0.1.7"
     "@apimatic/core-interfaces" "^0.2.12"
@@ -22,7 +22,7 @@
     "@apimatic/http-query" "^0.3.7"
     "@apimatic/json-bigint" "^1.2.0"
     "@apimatic/proxy" "^0.1.2"
-    "@apimatic/schema" "^0.7.18"
+    "@apimatic/schema" "^0.7.19"
     axios "^1.8.4"
     detect-browser "^5.3.0"
     detect-node "^2.1.0"
@@ -81,10 +81,10 @@
     http-proxy-agent "^7.0.2"
     https-proxy-agent "^7.0.6"
 
-"@apimatic/schema@^0.7.18":
-  version "0.7.18"
-  resolved "https://registry.yarnpkg.com/@apimatic/schema/-/schema-0.7.18.tgz#0a362e2d2486de6d7bb42f9fd424f52ff4706dc5"
-  integrity sha512-Cyj04ztP+cTwiYwHRkhJcehXBQcKUSXW4H2k2ELIbzb6fCDAlBqOjVqLi9FJkutTgYES6D60xlFKfcm3uTsOyQ==
+"@apimatic/schema@^0.7.19":
+  version "0.7.19"
+  resolved "https://registry.yarnpkg.com/@apimatic/schema/-/schema-0.7.19.tgz#94db061918b895a1caa51e2c3ca1a9e12592ffbc"
+  integrity sha512-tOkBWslDuUp4OBbmcbvsg5am5jsg1S8ga2nMLOlnjHpgKWsW0w94NdnUEzI4mq/t2h0kKTyw9TMRyJse7M27sw==
   dependencies:
     tslib "^2.8.1"
 

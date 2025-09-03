@@ -1,8 +1,10 @@
-import { AbortError, GraphQLClientConfig, GraphQLResponse } from '.';
+import { AbortError, GraphQLClientConfig, GraphQLResult } from '.';
 import { HttpClient } from '@apimatic/axios-client-adapter';
 import { HttpRequest } from '@apimatic/core-interfaces';
+import { nullable, optional, Schema, validateAndMap } from '@apimatic/schema';
+import { graphQLResultSchema } from './graphQLResult';
 
-enum QueryType {
+export enum QueryType {
   Query = 'query',
   Mutation = 'mutation'
 }
@@ -15,44 +17,24 @@ export class GraphQLClient {
   constructor(config: GraphQLClientConfig) {
     this.baseUrl = config.baseUrl;
     this.headers = config.headers ?? {};
-    this.httpClient = new HttpClient(AbortError, {
-      timeout: config.timeout,
-    });
+    this.httpClient = new HttpClient(AbortError, { timeout: config.timeout });
   }
 
-  async executeQuery<T>(
+  async execute<T>(
     operationName: string,
+    operationType: QueryType,
     queryObj: Record<string, any>,
+    schema: Schema<T>,
     variables?: Record<string, any>,
-    types?: Record<string, string>
-  ): Promise<GraphQLResponse<T>> {
+    types?: Record<string, string>,
+  ): Promise<GraphQLResult<T>> {
     const query = this.buildQuery(
-      QueryType.Query,
+      operationType,
       types ?? {},
       operationName,
       variables ? Object.keys(variables) : [],
       this.buildFields(queryObj)
     );
-    return this.execute(query, variables);
-  }
-
-  async executeMutation<T>(
-    operationName: string,
-    queryObj: Record<string, any>,
-    variables?: Record<string, any>,
-    types?: Record<string, string>
-  ): Promise<GraphQLResponse<T>> {
-    const query = this.buildQuery(
-      QueryType.Mutation,
-      types ?? {},
-      operationName,
-      variables ? Object.keys(variables) : [],
-      this.buildFields(queryObj)
-    );
-    return this.execute(query, variables);
-  }
-
-  private async execute<T>(query: string, variables?: Record<string, any>): Promise<GraphQLResponse<T>> {
     const request: HttpRequest = {
       method: 'POST',
       url: this.baseUrl,
@@ -64,9 +46,43 @@ export class GraphQLClient {
     };
     const response = await this.httpClient.executeRequest(request);
 
-    return typeof response.body === 'string'
-      ? JSON.parse(response.body)
-      : { data: {}, errors: [] };
+    if (typeof response.body !== 'string') {
+      return {
+        data: null,
+        errors: [
+          {
+            message: `Invalid response body format from ${this.baseUrl}`
+          }
+        ]
+      };
+    }
+    const parsedBody = JSON.parse(response.body);
+    const validationResult = validateAndMap(parsedBody, graphQLResultSchema);
+    const validationResultData = validateAndMap(parsedBody.data[operationName], optional(nullable(schema)));
+    if (validationResult.errors) {
+      return {
+        data: null,
+        errors: [
+          ...validationResult.errors.map(err => ({
+            message: err.message ?? 'Unknown error',
+          }))
+        ]
+      };
+    }
+    if (validationResultData.errors) {
+      return {
+        data: null,
+        errors: [
+          ...validationResultData.errors.map(err => ({
+            message: err.message ?? 'Unknown error',
+          }))
+        ]
+      };
+    }
+    return {
+      ...validationResult.result,
+      data: validationResultData.result
+    };
   }
 
   private buildQuery(

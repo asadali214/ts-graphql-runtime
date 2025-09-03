@@ -1,4 +1,5 @@
-export { GraphQLClient } from './graphQLClient';
+export { GraphQLClient, QueryType } from './graphQLClient';
 export { GraphQLClientConfig } from './graphQLClientConfig';
-export { GraphQLResponse } from './graphQLResponse';
+export { GraphQLResult } from './graphQLResult';
 export { AbortError } from './abortError';
+export * from '@apimatic/schema';
