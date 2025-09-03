@@ -1,10 +1,37 @@
 import { array, GraphQLClient, lazy, number, object, optional, QueryType, Schema, string } from '../src';
 
+interface User {
+  id?: string;
+  name?: string;
+  email?: string;
+  accounts?: Account[];
+}
+
+export interface Account {
+  id?: string;
+  user?: User;
+  type?: string;
+  balance?: number;
+  currency?: string;
+  transactions?: Transaction[];
+}
+
+export interface Transaction {
+  id?: string;
+  account?: Account;
+  timestamp?: string;
+  description?: string;
+  amount?: number;
+  currency?: string;
+  balanceAfter?: number;
+  category?: string;
+}
+
 describe('GraphQLClient', () => {
   const baseUrl = 'http://localhost:4000';
   const config = { baseUrl };
 
-  const accountSchema: Schema<any> = object({
+  const accountSchema: Schema<Account> = object({
     id: ['id', optional(string())],
     user: ['user', optional(lazy(() => userSchema))],
     type: ['type', optional(string())],
@@ -13,14 +40,14 @@ describe('GraphQLClient', () => {
     transactions: ['transactions', optional(array(lazy(() => transactionSchema)))],
   });
 
-  const userSchema: Schema<any> = object({
+  const userSchema: Schema<User> = object({
     id: ['id', optional(string())],
     name: ['name', optional(string())],
     email: ['email', optional(string())],
     accounts: ['accounts', optional(array(accountSchema))],
   });
 
-  const transactionSchema: Schema<any> = object({
+  const transactionSchema: Schema<Transaction> = object({
     id: ['id', optional(string())],
     account: ['account', optional(accountSchema)],
     timestamp: ['timestamp', optional(string())],
@@ -29,16 +56,6 @@ describe('GraphQLClient', () => {
     currency: ['currency', optional(string())],
     balanceAfter: ['balanceAfter', optional(number())],
     category: ['category', optional(string())], 
-  });
-
-  const paymentSchema: Schema<any> = object({
-    id: ['id', optional(string())],
-    fromAccount: ['fromAccount', optional(accountSchema)],
-    toAccount: ['toAccount', optional(accountSchema)],
-    amount: ['amount', optional(number())],
-    currency: ['currency', optional(string())],
-    timestamp: ['timestamp', optional(string())],
-    status: ['status', optional(string())],
   });
 
   it('should execute a query', async () => {
