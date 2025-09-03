@@ -8,6 +8,7 @@
     "clean": "lerna run clean",
     "build": "lerna run build",
     "lint": "lerna run lint",
+    "publish": "lerna publish",
     "check-style": "lerna run check-style",
     "check-style:fix": "lerna run check-style:fix",
     "build:dev": "tsc -b ./tsconfig.monorepo.json",

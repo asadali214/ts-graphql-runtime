@@ -64,11 +64,9 @@ export class GraphQLClient {
     };
     const response = await this.httpClient.executeRequest(request);
 
-    if (typeof response.body === 'string') {
-      return JSON.parse(response.body);
-    }
-
-    return typeof response.body === 'string' ? JSON.parse(response.body) : { errors: [] };
+    return typeof response.body === 'string'
+      ? JSON.parse(response.body)
+      : { data: {}, errors: [] };
   }
 
   private buildQuery(
