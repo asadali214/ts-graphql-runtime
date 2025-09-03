@@ -58,7 +58,7 @@ export class GraphQLClient {
     }
     const parsedBody = JSON.parse(response.body);
     const validationResult = validateAndMap(parsedBody, graphQLResultSchema);
-    const validationResultData = validateAndMap(parsedBody.data[operationName], optional(nullable(schema)));
+    const validationResultData = validateAndMap(parsedBody.data?.[operationName], optional(nullable(schema)));
     if (validationResult.errors) {
       return {
         data: null,

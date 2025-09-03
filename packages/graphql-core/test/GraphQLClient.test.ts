@@ -1,40 +1,56 @@
-import { GraphQLClient } from '../src';
-import { HttpClient } from '@apimatic/axios-client-adapter';
+import { array, GraphQLClient, lazy, number, object, optional, QueryType, Schema, string } from '../src';
 
 describe('GraphQLClient', () => {
   const baseUrl = 'http://localhost:4000';
   const config = { baseUrl };
 
-  let executeRequestMock: jest.SpyInstance;
-  beforeEach(() => {
-    executeRequestMock = jest.spyOn(HttpClient.prototype, 'executeRequest');
+  const accountSchema: Schema<any> = object({
+    id: ['id', optional(string())],
+    user: ['user', optional(lazy(() => userSchema))],
+    type: ['type', optional(string())],
+    balance: ['balance', optional(number())],
+    currency: ['currency', optional(string())],
+    transactions: ['transactions', optional(array(lazy(() => transactionSchema)))],
   });
 
-  afterEach(() => {
-    executeRequestMock.mockRestore();
+  const userSchema: Schema<any> = object({
+    id: ['id', optional(string())],
+    name: ['name', optional(string())],
+    email: ['email', optional(string())],
+    accounts: ['accounts', optional(array(accountSchema))],
+  });
+
+  const transactionSchema: Schema<any> = object({
+    id: ['id', optional(string())],
+    account: ['account', optional(accountSchema)],
+    timestamp: ['timestamp', optional(string())],
+    description: ['description', optional(string())],
+    amount: ['amount', optional(number())],
+    currency: ['currency', optional(string())],
+    balanceAfter: ['balanceAfter', optional(number())],
+    category: ['category', optional(string())], 
+  });
+
+  const paymentSchema: Schema<any> = object({
+    id: ['id', optional(string())],
+    fromAccount: ['fromAccount', optional(accountSchema)],
+    toAccount: ['toAccount', optional(accountSchema)],
+    amount: ['amount', optional(number())],
+    currency: ['currency', optional(string())],
+    timestamp: ['timestamp', optional(string())],
+    status: ['status', optional(string())],
   });
 
   it('should execute a query', async () => {
     const client = new GraphQLClient(config);
-    executeRequestMock.mockResolvedValue({
-      body: JSON.stringify({ data: { testQuery: { id: 1, name: 'Test' } }, errors: [] }),
-      statusCode: 200,
-      headers: {},
-    });
-    const result = await client.executeQuery('testQuery', { id: true, name: true });
-    expect(result.data['testQuery']).toEqual({ id: 1, name: 'Test' });
-    expect(result.errors).toEqual([]);
-  });
-
-  it('should execute a mutation', async () => {
-    const client = new GraphQLClient(config);
-    executeRequestMock.mockResolvedValue({
-      body: JSON.stringify({ data: { testMutation: { success: true } }, errors: [] }),
-      statusCode: 200,
-      headers: {},
-    });
-    const result = await client.executeMutation('testMutation', { success: true });
-    expect(result.data['testMutation']).toEqual({ success: true });
-    expect(result.errors).toEqual([]);
+    const result = await client.execute(
+      'currentUser',
+      QueryType.Query,
+      { id: true, name: true, accounts: { id: true, balance: true } },
+      userSchema
+    );
+    expect(result.data).toEqual({ id: "1", name: 'Test User', accounts: [{ id: "101", balance: 1000 }] });
+    expect(result.errors).toBeUndefined();
+    expect(result.extensions).toBeUndefined();
   });
 });
